@@ -34,6 +34,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SyncFromCurrentSpringArm();
 
+	/** Put the camera back where it was before the first orbit / pan / zoom (the IHPC HUD's round "reset view"
+	 *  button, Figma FINAL FESTIVAL frame 17). Does nothing if the view was never moved. */
+	UFUNCTION(BlueprintCallable, Category="Mouse")
+	void ResetView();
+
+	/** True once the user has orbited / panned / zoomed away from the starting view. */
+	UFUNCTION(BlueprintPure, Category="Mouse")
+	bool IsViewChanged() const;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mouse")
 	TObjectPtr<USpringArmComponent> SpringArmComponent = nullptr;
 
@@ -73,4 +82,13 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+private:
+	/** Remembers the spring arm's view the first time the user moves it (the view ResetView goes back to). */
+	void RememberStartViewIfNeeded();
+
+	bool bHasStartView = false;
+	FRotator StartArmRotation = FRotator::ZeroRotator;
+	FVector StartArmLocation = FVector::ZeroVector;
+	float StartArmLength = 0.f;
 };

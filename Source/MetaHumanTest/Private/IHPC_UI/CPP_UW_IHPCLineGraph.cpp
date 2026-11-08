@@ -64,6 +64,7 @@ void UCPP_UW_IHPCLineGraph::NativePreConstruct()
 void UCPP_UW_IHPCLineGraph::SetSeries(const TArray<FIHPCGraphSeries>& NewSeries)
 {
 	Series = NewSeries;
+	bShowingDemoData = false;
 }
 
 void UCPP_UW_IHPCLineGraph::SetSeriesVisible(int32 SeriesIndex, bool bVisible)
@@ -86,6 +87,7 @@ void UCPP_UW_IHPCLineGraph::GenerateDemoData(int32 Seed, int32 NumSamples)
 	}
 
 	Series = MakeDefaultSeriesLayout();
+	bShowingDemoData = true;
 	for (int32 SeriesIndex = 0; SeriesIndex < Series.Num(); ++SeriesIndex)
 	{
 		// A seeded random stream gives the same curves every time for the same seed.

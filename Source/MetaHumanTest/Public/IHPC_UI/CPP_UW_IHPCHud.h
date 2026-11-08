@@ -1,79 +1,71 @@
 // CPP_UW_IHPCHud.h
 // -----------------------------------------------------------------------------
-// The full-screen IHPC HUD - the top of the screen in every Figma iPad frame.
+// The full-screen IHPC HUD. Figma page "FINAL FESTIVAL" (file "Avatar Injury Prevention Program").
 //
-//   +-------------------------------------------------------------------+
-//   |              AVATAR INJURY PREVENTION TECHNOLOGY                    |  title bar (#1D3C55, 105 px)
-//   +-------------------------------------------------------------------+
-//   |  Profile | Progress | Saved Videos | History & Timeline | Settings  |  nav bar (#274A65, 88 px)
-//   +-------------------------------------------------------------------+     (hidden until opened)
-//                                (v)                                        chevron button
+//   +------------------------------------------------------------------------------+
+//   |                   AVATAR INJURY PREVENTION TECHNOLOGY                         |  title bar (#1D3C55, 112 px)
+//   +------------------------------------------------------------------------------+
+//   | (o) Graphs     (x) | (BOT) [chat]                                      ( @ ) |  <- reset view (only after
+//   | [ Arms        v ]  | (=)                                                      |     the camera was moved)
+//   | [ Legs        v ]  | (m)   layer buttons                                      |
+//   |  ...               | (s)                                                      |
+//   |                    | (a)   tabs (side bar, expanded)                          |
+//   |  side panel        | ...                                                      |
+//   |  (332 px)          | (^)                                                      |
+//   |                    |        (|<) (||) (-) ===o===(x1.5)--- (+) (>) (>|)       |  timeline (compact)
+//   +------------------------------------------------------------------------------+
 //
-//   * Chevron button: opens / closes the nav bar (Figma frame 1 = closed, frame 3 = open).
-//     Closed: dark see-through circle + white down arrow. Open: white circle + blue up arrow.
-//   * Tabs: clicking a tab selects it (green highlight). Clicking it again unselects it.
-//   * "Saved Videos" opens the analysis panel (Figma frame 5) and closes the nav bar,
-//     because that frame shows the panel with the nav bar closed. Change AnalysisPanelTab
-//     to make a different tab open the panel.
-//   * Profile / Progress / History & Timeline / Settings each open their own EMPTY panel with the
-//     same look as the analysis panel's background (Figma frame 5 "Rectangle 26": black 62 %,
-//     radius 29, 1217 x 798). Their content is not designed yet; add it inside the panels.
-//   * Close "X" (PanelCloseButton): a round button on the top-right corner of whichever panel is
-//     open. Clicking it closes the panel and unselects the tab (same as clicking the tab again).
-//   * ACTIONS menu (the 4th tab, Tab_HistoryTimeline, labelled "Actions" in the Widget Blueprint; its panel
-//     HistoryTimelinePanel holds the ActionsList): every Button named "Action_<Name>" anywhere in the HUD
-//     (Action_Running, Action_TennisForehand, Action_SoccerWarmup) plays the action <Name> on the possessed pawn's
-//     UAnimationTimelineComp (its Action Clips). The playing action's button is highlighted green; clicking it again
-//     goes back to walk / jog / run. Actions the pawn has no clip for are greyed out. New action = add a button
-//     named Action_<Name> in the designer + a clip under <Name> in each pawn's AnimationTimelineComp > Action Clips.
+//   * SIDE BAR (WBP_IHPC_SideBar): BOT avatar (chat), Body / Muscles / Skeleton layer buttons, the tabs, the chevron.
+//     The tabs replace the old drop-down nav bar.
+//   * Clicking a tab opens its SIDE PANEL on the left (Figma "Rectangle 31": #0E2334, 332 wide, below the title
+//     bar); the side bar and the timeline slide right to make room (Figma frames 19-22). Clicking the tab again or the
+//     panel's round X closes it. One panel at a time:
+//         Action          -> ActionsPanel          (Idle / Running / Jogging / Jumping ... cards -> avatar actions)
+//         Pose Estimation -> PoseEstimationContent (empty: ready for the pose estimation feature)
+//         Graphs          -> GraphsPanel           (body regions; Movement Graph + Active Muscles, filters, export)
+//         Timeline        -> TaggedPointsList      (tagged points / bookmarks / recordings; click = jump there)
+//         Saved Videos    -> SavedVideosList       (video cards; click = jump there)
+//         Settings        -> SettingsContent       (empty: ready for settings)
+//     The panel title and icon come from the tab (its Label and normal picture).
+//   * TIMELINE (WBP_IHPC_Timeline): centred at the bottom; compact (no Record / Bookmark) while a panel is open.
+//     New recordings -> Saved Videos + Timeline panel + marker; bookmarks -> Timeline panel + marker.
+//   * ZOOMED GRAPH: the graph card's zoom icon shows a large Movement Graph in the free part of the screen.
+//   * RESET VIEW (Figma frame 17, round arrow at the top right): puts the camera back where it started.
 //
-// Clicks on empty parts of the HUD pass straight through to the 3D view, so the
-// existing mouse orbit / pan / zoom keeps working.
+// Clicks on empty parts of the HUD pass straight through to the 3D view, so the mouse orbit / pan / zoom keeps working.
 //
 // Widget Blueprint: /Game/UserInterface/IHPC/Widgets/WBP_IHPC_HUD
-// Created by ACPP_PlayerController::BeginPlay (MainHUDWidgetClass, set in BP_PlayerController),
-// the same way as the anatomy switcher and pawn switcher, and drawn above them (Z-order 10).
+// Created by ACPP_PlayerController::BeginPlay (MainHUDWidgetClass, set in BP_PlayerController), drawn above the other
+// widgets (Z-order 10). The layer switcher is now INSIDE the side bar, so BP_PlayerController no longer creates its own
+// (Anatomy View Switcher Widget Class = None).
 // -----------------------------------------------------------------------------
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Styling/SlateTypes.h"
 #include "IHPC_UI/IHPCTypes.h"
 #include "CPP_UW_IHPCHud.generated.h"
 
 class UButton;
 class UImage;
+class UTextBlock;
 class UTexture2D;
-class UCPP_UW_IHPCNavTab;
-class UCPP_UW_IHPCAnalysisPanel;
+class UCPP_UW_IHPCSideBar;
+class UCPP_UW_IHPCActionsPanel;
+class UCPP_UW_IHPCGraphsPanel;
+class UCPP_UW_IHPCTaggedPointsList;
+class UCPP_UW_IHPCVideosRow;
 class UCPP_UW_IHPCTimeline;
-class UCPP_UW_IHPCHud;
-class UAnimationTimelineComp;
-class APawn;
+class UCPP_UW_IHPCLineGraph;
+class UCPP_UW_IHPCLayerSwitcher;
+class UCPP_UW_IHPCChatPanel;
 
+/** Old nav bar tab changed (kept for Blueprints that listen to OnTabChanged). */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIHPCTabChanged, EIHPCNavTab, NewTab);
 
-/** Fired when an Action button starts an action (ActionName) or goes back to the locomotion (None). */
+/** An action card started an action (ActionName) or the avatar went back to its default animation (None). */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIHPCActionChanged, FName, ActionName);
-
-/** One per Action_<Name> button: a button's OnClicked has no parameters, so this remembers which action it is. */
-UCLASS()
-class METAHUMANTEST_API UIHPCActionButtonProxy : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	TWeakObjectPtr<UCPP_UW_IHPCHud> Hud;
-	TWeakObjectPtr<UButton> Button;
-	FName ActionName;
-	/** The button's look from the Widget Blueprint (restored when it is not the playing action). */
-	FButtonStyle DesignStyle;
-
-	UFUNCTION()
-	void HandleClicked();
-};
 
 UCLASS(Abstract)
 class METAHUMANTEST_API UCPP_UW_IHPCHud : public UUserWidget
@@ -83,165 +75,261 @@ class METAHUMANTEST_API UCPP_UW_IHPCHud : public UUserWidget
 public:
 	UCPP_UW_IHPCHud(const FObjectInitializer& ObjectInitializer);
 
-	// ---------------------------------------------------------------- settings
+	// ---------------------------------------------------------------- behaviour
 
-	/** Which tab opens the analysis panel. */
+	/** Panel open when the game starts (Figma frame 15: none). */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IHPC|Behaviour")
-	EIHPCNavTab AnalysisPanelTab = EIHPCNavTab::SavedVideos;
+	EIHPCSideTab StartTab = EIHPCSideTab::None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IHPC|Behaviour")
-	bool bStartWithNavBarOpen = false;
+	/** Close the Action panel after picking an action. Off by default: the side panel does not cover the avatar. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Behaviour")
+	bool bCloseActionsPanelOnSelect = false;
 
-	/** Height of the nav bar (Figma: 88 px). The chevron moves down by this much when it opens. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IHPC|Layout")
-	float NavBarHeight = 88.f;
+	/** Only show the reset-view button after the camera was orbited / panned / zoomed (Figma shows it in one frame). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Behaviour")
+	bool bShowResetViewOnlyWhenMoved = true;
 
-	/** Arrow shown while the nav bar is closed (white, pointing down). */
+	/** Hide the timeline's Record / Bookmark buttons while a panel is open (Figma frames 19-22: 916 px bar). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Behaviour")
+	bool bCompactTimelineWhenPanelOpen = true;
+
+	/** Title of a bookmark made with a graph card's bookmark icon: {0} = body region, {1} = number. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Behaviour")
+	FText GraphBookmarkTitleFormat;
+
+	// ---------------------------------------------------------------- layout (Figma px)
+
+	/** Width of the side panel (Figma: x 0 - 332). It slides in from the left by this much. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Layout")
+	float SidePanelWidth = 332.f;
+
+	/** How far the side bar moves right while a panel is open (Figma: x 24 -> 346). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Layout")
+	float SideBarShiftWhenPanelOpen = 322.f;
+
+	/** How far the timeline (and the zoomed graph) move right while a panel is open (Figma: bar centre 683 -> 860). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Layout")
+	float ContentShiftWhenPanelOpen = 177.f;
+
+	/** Seconds the panel takes to slide in / out (0 = instant). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Layout", meta = (ClampMin = "0"))
+	float PanelSlideTime = 0.2f;
+
+	// ---------------------------------------------------------------- style
+
+	/** Empty frosted glass circle (Icons/Button.png) behind the panel's X and the zoomed graph's X. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Style")
-	TObjectPtr<UTexture2D> ChevronClosedTexture;
+	TObjectPtr<UTexture2D> RoundButtonTexture;
 
-	/** Arrow shown while the nav bar is open (blue #245983, pointing up). */
+	/** Size of the panel's close X button (Figma "ihpc ui (1)4ety-06 3": 42 x 42). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Style")
-	TObjectPtr<UTexture2D> ChevronOpenTexture;
+	FVector2D CloseButtonSize = FVector2D(42.f, 42.f);
 
-	/** Circle colour while closed: #1D3C55 at 44% (Figma frame 1). */
+	/** Reset view circle (Figma frame 17 "Rectangle 31": rgba(12,39,61,0.66), 68 x 68, fully round). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Style")
-	FLinearColor ChevronCircleClosedColor;
-
-	/** Circle colour while open: white at 86% (Figma frame 3). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Style")
-	FLinearColor ChevronCircleOpenColor;
-
-	// ---------------------------------------------------------------- actions menu
-
-	/** Buttons whose name starts with this play the action named by the rest (Action_Running -> "Running"). */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IHPC|Actions")
-	FString ActionButtonPrefix = TEXT("Action_");
-
-	/** Close the Actions panel after picking an action, so the avatar can be seen doing it. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Actions")
-	bool bCloseActionsPanelOnSelect = true;
-
-	/** Fill of the playing action's button (the nav bar's highlight green #B3CA7F, see-through). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC|Actions")
-	FLinearColor ActionSelectedColor;
+	FLinearColor ResetViewColor;
 
 	// ---------------------------------------------------------------- events
 
+	/** The open side panel changed (None = closed). */
+	UPROPERTY(BlueprintAssignable, Category = "IHPC|Events")
+	FIHPCSideTabEvent OnSideTabChanged;
+
+	/** OLD nav bar event, still fired: Saved Videos, Settings, and HistoryTimeline (= the Action panel, which the
+	 *  old 4th tab had become), None for the other panels. Prefer OnSideTabChanged. */
 	UPROPERTY(BlueprintAssignable, Category = "IHPC|Events")
 	FIHPCTabChanged OnTabChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "IHPC|Events")
 	FIHPCActionChanged OnActionChanged;
 
-	/** Same as clicking the Action_<ActionName> button: plays that action on the possessed pawn, or goes back to
-	 *  walk / jog / run if it is already playing (or ActionName is None). Returns true if an action is now playing. */
+	/** The user sent a chat message to the assistant (BOT). Connect a chatbot here; answer with
+	 *  GetChatPanel()->AddBotMessage. */
+	UPROPERTY(BlueprintAssignable, Category = "IHPC|Events")
+	FIHPCTextEvent OnChatMessageSent;
+
+	// ---------------------------------------------------------------- side panels
+
+	/** Opens Tab's panel (closing any other) and highlights its tab. None = close the panel. */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
+	void SelectSideTab(EIHPCSideTab Tab);
+
+	/** What a tab click does: opens Tab's panel, or closes it if it is already open. */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
+	void ToggleSideTab(EIHPCSideTab Tab);
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	EIHPCSideTab GetSelectedSideTab() const { return SelectedTab; }
+
+	/** Closes the open panel (what the round X does). */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
+	void ClosePanel() { SelectSideTab(EIHPCSideTab::None); }
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	bool IsAnyPanelOpen() const { return SelectedTab != EIHPCSideTab::None; }
+
+	/** The content widget a tab shows inside the side panel (null for None / a missing widget). */
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	UWidget* GetPanelForSideTab(EIHPCSideTab Tab) const;
+
+	/** Shows every tab (true) or only the layer buttons (false). */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
+	void SetSideBarExpanded(bool bExpanded);
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	bool IsSideBarExpanded() const;
+
+	// ---------------------------------------------------------------- actions (Action panel)
+
+	/** Same as clicking the card for ActionName (None = Idle): plays it on the possessed pawn, or goes back to the
+	 *  default animation if it is already playing. Returns true if an action clip is now playing. */
 	UFUNCTION(BlueprintCallable, Category = "IHPC|Actions")
 	bool SelectAction(FName ActionName);
 
-	/** Action playing on the possessed pawn, or None while it walks / jogs / runs. */
+	/** Action playing on the possessed pawn, or None while it uses its default animation. */
 	UFUNCTION(BlueprintPure, Category = "IHPC|Actions")
 	FName GetPlayingAction() const;
 
-	/** Re-reads the possessed pawn's actions: highlight + greyed-out buttons. */
+	/** Re-reads the possessed pawn's actions (available / highlighted cards). */
 	UFUNCTION(BlueprintCallable, Category = "IHPC|Actions")
 	void RefreshActionButtons();
 
-	// ---------------------------------------------------------------- functions
+	// ---------------------------------------------------------------- saved videos / tagged points
 
+	/** A new clip: a card in Saved Videos, a row in the Timeline panel (the HUD also adds its timeline marker when
+	 *  it comes from the Record button). */
 	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
-	void SetNavBarOpen(bool bOpen);
+	void AddSavedVideo(const FIHPCTaggedMoment& Moment);
 
+	/** A row in the Timeline panel only (e.g. a bookmark). */
 	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
-	void ToggleNavBar() { SetNavBarOpen(!bNavBarOpen); }
+	void AddTaggedPoint(const FIHPCTaggedMoment& Moment);
 
 	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
-	bool IsNavBarOpen() const { return bNavBarOpen; }
+	TArray<FIHPCTaggedMoment> GetSavedVideos() const;
 
-	/** Selects a tab (None = unselect all) and opens/closes the analysis panel to match. */
+	// ---------------------------------------------------------------- camera / graphs
+
+	/** Puts the camera back to its starting view (the round arrow button). */
 	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
+	void ResetView();
+
+	/** Shows / hides the large Movement Graph (the graph card's zoom icon). */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
+	void SetZoomedGraphVisible(bool bVisible);
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	bool IsZoomedGraphVisible() const { return bZoomedGraphVisible; }
+
+	// ---------------------------------------------------------------- parts
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	UCPP_UW_IHPCSideBar* GetSideBar() const { return SideBar; }
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	UCPP_UW_IHPCTimeline* GetTimeline() const { return Timeline; }
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	UCPP_UW_IHPCLayerSwitcher* GetLayerSwitcher() const;
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
+	UCPP_UW_IHPCChatPanel* GetChatPanel() const;
+
+	// ---------------------------------------------------------------- OLD nav bar calls (still work)
+
+	/** OLD: selects the side panel that replaced the nav tab (Saved Videos -> Saved Videos, History & Timeline ->
+	 *  Action, Settings -> Settings; Profile / Progress no longer exist -> closes the panel). */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD|Old Nav Bar")
 	void SelectTab(EIHPCNavTab Tab);
 
-	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
-	EIHPCNavTab GetSelectedTab() const { return SelectedTab; }
+	/** OLD: the open panel as a nav tab (see OnTabChanged). */
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD|Old Nav Bar")
+	EIHPCNavTab GetSelectedTab() const;
 
-	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
-	void SetAnalysisPanelOpen(bool bOpen);
+	/** OLD: the nav bar is gone; this expands / collapses the side bar's tabs instead. */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD|Old Nav Bar")
+	void SetNavBarOpen(bool bOpen) { SetSideBarExpanded(bOpen); }
 
-	/** Closes whichever tab panel is open and unselects its tab (what the close "X" does). */
-	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD")
-	void ClosePanel() { SelectTab(EIHPCNavTab::None); }
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD|Old Nav Bar")
+	void ToggleNavBar() { SetSideBarExpanded(!IsSideBarExpanded()); }
 
-	/** The panel a tab opens: the analysis panel for AnalysisPanelTab, otherwise ProfilePanel /
-	 *  ProgressPanel / HistoryTimelinePanel / SettingsPanel. Null for None or a missing panel. */
-	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
-	UWidget* GetPanelForTab(EIHPCNavTab Tab) const;
+	UFUNCTION(BlueprintPure, Category = "IHPC|HUD|Old Nav Bar")
+	bool IsNavBarOpen() const { return IsSideBarExpanded(); }
 
-	UFUNCTION(BlueprintPure, Category = "IHPC|HUD")
-	bool IsAnyPanelOpen() const { return GetPanelForTab(SelectedTab) != nullptr; }
+	/** OLD: the analysis panel was split into the Graphs / Timeline / Saved Videos panels; this opens Saved Videos. */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|HUD|Old Nav Bar")
+	void SetAnalysisPanelOpen(bool bOpen) { SelectSideTab(bOpen ? EIHPCSideTab::SavedVideos : EIHPCSideTab::None); }
+
+	static EIHPCSideTab SideTabFromNavTab(EIHPCNavTab Tab);
+	static EIHPCNavTab NavTabFromSideTab(EIHPCSideTab Tab);
 
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	/** The nav bar strip (with the tabs inside). Shown/hidden by the chevron. */
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UWidget> NavBar;
+	// ---- Widgets in the Widget Blueprint (names must match; all optional so the HUD still runs with parts missing)
 
-	/** Circle + arrow + button together. Moved down by NavBarHeight when the nav bar opens. */
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UWidget> ChevronGroup;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UButton> ChevronButton;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UImage> ChevronCircle;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UImage> ChevronIcon;
+	/** WBP_IHPC_SideBar (top left, below the title bar). */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCSideBar> SideBar;
 
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UCPP_UW_IHPCNavTab> Tab_Profile;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UCPP_UW_IHPCNavTab> Tab_Progress;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UCPP_UW_IHPCNavTab> Tab_SavedVideos;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UCPP_UW_IHPCNavTab> Tab_HistoryTimeline;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<UCPP_UW_IHPCNavTab> Tab_Settings;
+	/** The side panel frame (background, header, contents). Slides in from the left. */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> SidePanel;
 
-	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCAnalysisPanel> AnalysisPanel;
-
-	/** Empty panels for the other tabs, styled like Figma frame 5 "Rectangle 26". Put each tab's content inside. */
-	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> ProfilePanel;
-	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> ProgressPanel;
-	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> HistoryTimelinePanel;
-	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> SettingsPanel;
-
-	/** Round "X" on the top-right corner of the open panel. Shown only while a panel is open. */
+	/** Panel header: the tab's icon, its name, the round close X. */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UImage> PanelIcon;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UTextBlock> PanelTitle;
 	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UButton> PanelCloseButton;
 
-	/** Playback / timeline bar at the bottom (Figma "ihpc ui (1)ee 1"). Replaces the old prototype timeline. */
+	/** The six panel contents (one shown at a time). */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCActionsPanel> ActionsPanel;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> PoseEstimationContent;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCGraphsPanel> GraphsPanel;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCTaggedPointsList> TaggedPointsList;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCVideosRow> SavedVideosList;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> SettingsContent;
+
+	/** Playback / timeline bar at the bottom (Figma "ihpc ui (1)ee 1"). */
 	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCTimeline> Timeline;
 
+	/** Round "reset view" button at the top right (Figma frame 17). */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UButton> ResetViewButton;
+
+	/** Large Movement Graph (graph card zoom icon). */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UWidget> ZoomedGraphPanel;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UCPP_UW_IHPCLineGraph> ZoomedGraph;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UTextBlock> ZoomedGraphTitle;
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<UButton> ZoomedGraphCloseButton;
+
 private:
-	UFUNCTION() void HandleChevronClicked();
-	UFUNCTION() void HandleTabClicked(EIHPCNavTab Tab);
+	UFUNCTION() void HandleSideTabClicked(EIHPCSideTab Tab);
+	UFUNCTION() void HandlePanelCloseClicked();
 	UFUNCTION() void HandleRecordingSaved(const FIHPCTaggedMoment& Moment);
 	UFUNCTION() void HandleBookmarkAdded(const FIHPCTaggedMoment& Moment);
-	UFUNCTION() void HandlePanelCloseClicked();
-	UFUNCTION() void HandlePossessedPawnChanged(APawn* OldPawn, APawn* NewPawn);
+	UFUNCTION() void HandleActionSelected(FName PlayingAction, bool bStartedAction);
+	UFUNCTION() void HandleZoomRequested();
+	UFUNCTION() void HandleZoomedGraphCloseClicked();
+	UFUNCTION() void HandleGraphBookmarkRequested(const FText& RegionName);
+	UFUNCTION() void HandleChatMessageSent(const FText& Message);
+	UFUNCTION() void HandleResetViewClicked();
 
-	friend class UIHPCActionButtonProxy;
-	void HandleActionClicked(FName ActionName);
+	/** Shows the content of DisplayedTab, sets the panel title / icon. */
+	void RefreshPanelContent();
 
-	/** Finds every Action_<Name> button and binds it (once). */
-	void BindActionButtons();
+	/** Moves the side panel, side bar, timeline and zoomed graph for a slide amount (0 = closed, 1 = open). */
+	void ApplyPanelSlide(float Alpha);
 
-	/** The possessed pawn's timeline (actions live there). */
-	UAnimationTimelineComp* GetAvatarTimeline() const;
+	void ApplyStyles();
 
-	UPROPERTY(Transient)
-	TArray<TObjectPtr<UIHPCActionButtonProxy>> ActionButtons;
+	/** Panel that is open (or None). */
+	EIHPCSideTab SelectedTab = EIHPCSideTab::None;
 
-	/** Shows the panel of the selected tab, hides the others, shows / hides the close "X". */
-	void RefreshPanels();
+	/** Panel whose content is shown - stays the closing panel while it slides out. */
+	EIHPCSideTab DisplayedTab = EIHPCSideTab::None;
 
-	/** Updates the circle colour, arrow picture and position for the current open/closed state. */
-	void RefreshChevron();
+	float PanelSlideAlpha = 0.f;
+	bool bPanelSlideApplied = false;
 
-	TArray<UCPP_UW_IHPCNavTab*> GetTabs() const;
-
-	bool bNavBarOpen = false;
-	EIHPCNavTab SelectedTab = EIHPCNavTab::None;
+	bool bZoomedGraphVisible = false;
+	int32 GraphBookmarkCount = 0;
 };

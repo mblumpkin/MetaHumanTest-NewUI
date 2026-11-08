@@ -1,6 +1,9 @@
 // CPP_UW_IHPCLayerSwitcher.h
 // -----------------------------------------------------------------------------
-// The LAYER SWITCHER at the bottom right of the screen.
+// The LAYER SWITCHER: the Body / Muscles / Skeleton buttons.
+// FINAL FESTIVAL redesign: it now sits at the TOP OF THE SIDE BAR (stacked vertically, inside WBP_IHPC_SideBar as
+// "LayerSwitcher"), drawn with the high-quality Icons (Skin / Muscles / Skeleton, "Active ..." = selected).
+// The behaviour below is unchanged. Originally (Default iPad Version) it was a pill at the bottom right:
 // Figma (frame "iPad Pro 12.9" - 1"):
 //   * "ihpc ui rttd 2" - three glossy round buttons: Body (layers icon), Muscles, Skeleton.
 //                        Selected = dark navy circle + white icon, unselected = light blue + navy icon.
@@ -27,7 +30,8 @@
 // Widget Blueprint: /Game/UserInterface/IHPC/Widgets/WBP_IHPC_LayerSwitcher
 //   Needs Buttons "BodyLayer_Btn", "MusclesLayer_Btn", "SkeletonLayer_Btn", optional Image "SkeletonBadge",
 //   and (for the parent class) a Slider "AnatomyViewSwitcher_Slider" (Collapsed); "AnatomyMetaHuman_Btn" is optional.
-// Created by CPP_PlayerController (BP_PlayerController -> Anatomy View Switcher Widget Class).
+// Lives inside WBP_IHPC_SideBar (so inside the HUD). BP_PlayerController -> Anatomy View Switcher Widget Class is
+// None now, so the controller does not create a second one (setting it again would show a second, separate copy).
 // -----------------------------------------------------------------------------
 
 #pragma once

@@ -123,6 +123,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "IHPC|Timeline")
 	bool IsRecording() const { return bRecording; }
 
+	/** Compact bar (Figma FINAL FESTIVAL frames 19-22, while a side panel is open: 916 px instead of 1048):
+	 *  hides the Record and Bookmark buttons at the two ends. Record stays visible while a recording is running,
+	 *  so it can always be stopped. The HUD switches this when a side panel opens / closes. */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|Timeline")
+	void SetCompact(bool bInCompact);
+
+	UFUNCTION(BlueprintPure, Category = "IHPC|Timeline")
+	bool IsCompact() const { return bCompact; }
+
 	/** Picks a speed from SpeedSteps by index (clamped). */
 	UFUNCTION(BlueprintCallable, Category = "IHPC|Timeline")
 	void SetSpeedIndex(int32 Index);
@@ -188,6 +197,9 @@ private:
 	UFUNCTION() void HandleScrubEnd();
 	UFUNCTION() void HandleMarkerClicked();
 
+	/** Shows / hides the end buttons for the compact bar. */
+	void RefreshCompact();
+
 	/** Moves the knob and the dark/light split to Time (0..1). */
 	void ShowTime(float Time);
 
@@ -212,6 +224,7 @@ private:
 	int32 SpeedIndex = 2;
 	float ShownSpeed = -1.f;
 
+	bool bCompact = false;
 	bool bRecording = false;
 	float RecordingStartTime = 0.f;
 	FDateTime RecordingStartClock;

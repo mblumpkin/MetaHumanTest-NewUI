@@ -98,6 +98,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "IHPC|Graph")
 	void GenerateDemoData(int32 Seed, int32 NumSamples = 120);
 
+	/** True while the lines are the sample curves from GenerateDemoData (false after SetSeries with real data). */
+	UFUNCTION(BlueprintPure, Category = "IHPC|Graph")
+	bool IsShowingDemoData() const { return bShowingDemoData; }
+
 	/** The four lines used by the Figma legend, with names and colours but no values. */
 	static TArray<FIHPCGraphSeries> MakeDefaultSeriesLayout();
 
@@ -117,4 +121,6 @@ private:
 	static FString FormatTick(float Value);
 
 	float PlayheadTime = -1.f;
+
+	bool bShowingDemoData = false;
 };

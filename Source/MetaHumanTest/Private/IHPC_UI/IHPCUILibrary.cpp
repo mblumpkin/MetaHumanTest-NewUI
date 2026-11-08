@@ -3,6 +3,9 @@
 #include "IHPC_UI/IHPCUILibrary.h"
 
 #include "AnimationTimelineComp.h"   // existing project component that scrubs the avatar animation
+#include "../../CPP_MouseFunctionComp.h"   // module root (not on the include path): mouse orbit / pan / zoom
+#include "Components/Button.h"
+#include "Engine/Texture2D.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -147,4 +150,80 @@ FLinearColor UIHPCUILibrary::SeverityToColor(float Severity)
 		}
 	}
 	return FigmaColor(Stops[UE_ARRAY_COUNT(Stops) - 1].Hex);
+}
+
+void UIHPCUILibrary::ApplyPictureButtonStyle(UButton* Button, UTexture2D* Texture, FVector2D Size, float HoveredTint, float PressedTint)
+{
+	if (!Button || !Texture)
+	{
+		return;   // keep whatever look the Widget Blueprint has
+	}
+
+	auto MakeBrush = [&](float Tint, float Alpha)
+	{
+		FSlateBrush Brush;
+		Brush.SetResourceObject(Texture);
+		Brush.ImageSize = Size;
+		Brush.DrawAs = ESlateBrushDrawType::Image;
+		Brush.TintColor = FSlateColor(FLinearColor(Tint, Tint, Tint, Alpha));
+		return Brush;
+	};
+
+	FButtonStyle Style = Button->GetStyle();
+	Style.SetNormal(MakeBrush(1.f, 1.f));
+	Style.SetHovered(MakeBrush(HoveredTint, 1.f));
+	Style.SetPressed(MakeBrush(PressedTint, 1.f));
+	Style.SetDisabled(MakeBrush(0.5f, 0.5f));
+	Style.SetNormalPadding(FMargin(0.f));
+	Style.SetPressedPadding(FMargin(0.f));
+	Button->SetStyle(Style);
+	Button->SetBackgroundColor(FLinearColor::White);
+}
+
+void UIHPCUILibrary::ApplyRoundedButtonStyle(UButton* Button, FLinearColor Color, float CornerRadius, float HoveredTint, float PressedTint)
+{
+	if (!Button)
+	{
+		return;
+	}
+	auto Scaled = [&Color](float Tint)
+	{
+		return FLinearColor(Color.R * Tint, Color.G * Tint, Color.B * Tint, Color.A);
+	};
+	FButtonStyle Style = Button->GetStyle();
+	Style.SetNormal(MakeRoundedBrush(Color, CornerRadius));
+	Style.SetHovered(MakeRoundedBrush(Scaled(HoveredTint), CornerRadius));
+	Style.SetPressed(MakeRoundedBrush(Scaled(PressedTint), CornerRadius));
+	FLinearColor Disabled = Color;
+	Disabled.A *= 0.5f;
+	Style.SetDisabled(MakeRoundedBrush(Disabled, CornerRadius));
+	Style.SetNormalPadding(FMargin(0.f));
+	Style.SetPressedPadding(FMargin(0.f));
+	Button->SetStyle(Style);
+	Button->SetBackgroundColor(FLinearColor::White);
+}
+
+FSlateBrush UIHPCUILibrary::MakeRoundedBrush(FLinearColor Color, float CornerRadius)
+{
+	FSlateBrush Brush;
+	Brush.DrawAs = ESlateBrushDrawType::RoundedBox;
+	Brush.TintColor = FSlateColor(Color);
+	Brush.OutlineSettings.CornerRadii = FVector4(CornerRadius, CornerRadius, CornerRadius, CornerRadius);
+	Brush.OutlineSettings.RoundingType = ESlateBrushRoundingType::FixedRadius;
+	Brush.OutlineSettings.Color = FSlateColor(FLinearColor::Transparent);
+	Brush.OutlineSettings.Width = 0.f;
+	return Brush;
+}
+
+UCPP_MouseFunctionComp* UIHPCUILibrary::FindAvatarCameraControl(const UObject* WorldContextObject)
+{
+	APawn* Pawn = UGameplayStatics::GetPlayerPawn(WorldContextObject, 0);
+	return Pawn ? Pawn->FindComponentByClass<UCPP_MouseFunctionComp>() : nullptr;
+}
+
+FIHPCTaggedMoment UIHPCUILibrary::MakeMomentNow(const UObject* WorldContextObject, const FText& Title, float Severity)
+{
+	const FDateTime Now = FDateTime::Now();
+	const float Time = FMath::Max(GetAvatarTimelineTime(WorldContextObject), 0.f);
+	return FIHPCTaggedMoment(Title, FormatFigmaDate(Now), FormatFigmaTime(Now), FMath::Clamp(Severity, 0.f, 1.f), Time);
 }

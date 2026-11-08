@@ -94,10 +94,18 @@ void UCPP_UW_IHPCVideosRow::RebuildCards()
 
 		if (UScrollBoxSlot* CardSlot = Cast<UScrollBoxSlot>(CardScrollBox->AddChild(Card)))
 		{
-			// Space after every card except the last one.
-			const float Right = (i < Moments.Num() - 1) ? CardSpacing : 0.f;
-			CardSlot->SetPadding(FMargin(0.f, 0.f, Right, 0.f));
-			CardSlot->SetVerticalAlignment(VAlign_Top);
+			// Space after every card except the last one: to the right in the row, below in a vertical list.
+			const float Gap = (i < Moments.Num() - 1) ? CardSpacing : 0.f;
+			if (CardScrollBox->GetOrientation() == Orient_Vertical)
+			{
+				CardSlot->SetPadding(FMargin(0.f, 0.f, 0.f, Gap));
+				CardSlot->SetHorizontalAlignment(HAlign_Center);
+			}
+			else
+			{
+				CardSlot->SetPadding(FMargin(0.f, 0.f, Gap, 0.f));
+				CardSlot->SetVerticalAlignment(VAlign_Top);
+			}
 		}
 		Cards.Add(Card);
 	}

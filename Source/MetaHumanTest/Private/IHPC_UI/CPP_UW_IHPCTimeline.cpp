@@ -257,6 +257,8 @@ void UCPP_UW_IHPCTimeline::ToggleRecording()
 		RecordingIndicator->SetVisibility(ESlateVisibility::Hidden);
 	}
 
+	RefreshCompact();   // compact bar: the record button can hide again now
+
 	const FIHPCTaggedMoment Moment = MakeMoment(FText::Format(RecordingTitleFormat, ++RecordingCount), RecordingStartTime, RecordingStartClock);
 	AddMarker(Moment);
 	OnRecordingSaved.Broadcast(Moment);   // the HUD adds it to Saved Videos + Tagged Points
@@ -384,6 +386,30 @@ void UCPP_UW_IHPCTimeline::HandleMarkerClicked()
 			OnMarkerClicked.Broadcast(Markers[i]);
 			return;
 		}
+	}
+}
+
+// ============================================================================
+// Compact bar (while a side panel is open)
+// ============================================================================
+
+void UCPP_UW_IHPCTimeline::SetCompact(bool bInCompact)
+{
+	bCompact = bInCompact;
+	RefreshCompact();
+}
+
+void UCPP_UW_IHPCTimeline::RefreshCompact()
+{
+	// Figma crops the bar to the middle 916 px: Record (left end) and Bookmark (right end) are not shown.
+	// Collapsed is fine here: the buttons sit on a Canvas, so the others do not move.
+	if (RecordButton)
+	{
+		RecordButton->SetVisibility((bCompact && !bRecording) ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
+	}
+	if (BookmarkButton)
+	{
+		BookmarkButton->SetVisibility(bCompact ? ESlateVisibility::Collapsed : ESlateVisibility::Visible);
 	}
 }
 

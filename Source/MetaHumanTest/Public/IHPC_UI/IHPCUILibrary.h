@@ -14,9 +14,14 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Styling/SlateBrush.h"
+#include "IHPC_UI/IHPCTypes.h"
 #include "IHPCUILibrary.generated.h"
 
 class UAnimationTimelineComp;
+class UCPP_MouseFunctionComp;
+class UButton;
+class UTexture2D;
 
 UCLASS()
 class METAHUMANTEST_API UIHPCUILibrary : public UBlueprintFunctionLibrary
@@ -71,4 +76,27 @@ public:
 	/** Colour on the card's green -> yellow -> orange -> red bar for a severity of 0..1. */
 	UFUNCTION(BlueprintPure, Category = "IHPC|Style")
 	static FLinearColor SeverityToColor(float Severity);
+
+	/** Gives a Button the same picture in every state: normal, hovered (x HoveredTint brighter), pressed
+	 *  (x PressedTint) and disabled (half brightness, half opacity). Used by the side bar's round buttons. */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|Style")
+	static void ApplyPictureButtonStyle(UButton* Button, UTexture2D* Texture, FVector2D Size,
+	                                    float HoveredTint = 1.15f, float PressedTint = 0.8f);
+
+	/** Gives a Button a plain-colour rounded look in every state (hovered = brighter, pressed = darker). */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|Style")
+	static void ApplyRoundedButtonStyle(UButton* Button, FLinearColor Color, float CornerRadius,
+	                                    float HoveredTint = 1.25f, float PressedTint = 0.8f);
+
+	/** A plain-colour rounded rectangle brush (a Figma rectangle with a corner radius). */
+	UFUNCTION(BlueprintPure, Category = "IHPC|Style")
+	static FSlateBrush MakeRoundedBrush(FLinearColor Color, float CornerRadius);
+
+	/** The mouse orbit / pan / zoom component on the player's current pawn (used by the Reset View button), or nullptr. */
+	UFUNCTION(BlueprintPure, Category = "IHPC|Camera", meta = (WorldContext = "WorldContextObject"))
+	static UCPP_MouseFunctionComp* FindAvatarCameraControl(const UObject* WorldContextObject);
+
+	/** A new tagged moment at the avatar animation's current time, dated now (for bookmarks). */
+	UFUNCTION(BlueprintCallable, Category = "IHPC|Timeline", meta = (WorldContext = "WorldContextObject"))
+	static FIHPCTaggedMoment MakeMomentNow(const UObject* WorldContextObject, const FText& Title, float Severity = 0.f);
 };

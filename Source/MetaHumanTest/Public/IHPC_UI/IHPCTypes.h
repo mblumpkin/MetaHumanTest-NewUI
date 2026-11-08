@@ -5,9 +5,11 @@
 //
 // Nothing in this file draws anything. It only describes the DATA the widgets
 // pass around, so every widget agrees on the same shapes:
-//   * EIHPCNavTab          - the five tabs in the drop-down nav bar
-//   * EIHPCAnatomyLayer    - the three buttons of the layer switcher (Body / Muscles / Skeleton)
-//   * EIHPCAccordionSection- the three sections of the graph accordion
+//   * EIHPCSideTab         - the tabs in the side bar (Figma page "FINAL FESTIVAL"), which replaced the nav bar
+//   * EIHPCNavTab          - the five tabs of the OLD drop-down nav bar (kept so old Blueprint calls still compile)
+//   * EIHPCAnatomyLayer    - the three layer buttons at the top of the side bar (Body / Muscles / Skeleton)
+//   * EIHPCAccordionSection- the three sections of the old graph accordion
+//   * FIHPCActionInfo      - one card in the Action panel (Idle, Running, Jogging ...)
 //   * FIHPCTaggedMoment    - one saved video / tagged point (a video card)
 //   * FIHPCGraphSeries     - one coloured line in a line graph
 // -----------------------------------------------------------------------------
@@ -17,8 +19,26 @@
 #include "CoreMinimal.h"
 #include "IHPCTypes.generated.h"
 
-/** The tabs in the nav bar (Figma components "Profile", "Progress", "Saved Videos",
- *  "History & Timeline" and "Settings"). None = no tab selected. */
+class UTexture2D;
+
+/** The tabs in the SIDE BAR (Figma page "FINAL FESTIVAL", frames 16-22). Each one opens its panel on the left of
+ *  the screen. None = no tab selected / no panel open.
+ *  Side bar order, top to bottom: Actions | Pose Estimation, Graphs | Timeline, Saved Videos, Settings. */
+UENUM(BlueprintType)
+enum class EIHPCSideTab : uint8
+{
+	None           UMETA(DisplayName = "None"),
+	Actions        UMETA(DisplayName = "Action (running man)"),
+	PoseEstimation UMETA(DisplayName = "Pose Estimation (stick figure)"),
+	Graphs         UMETA(DisplayName = "Graphs (line chart)"),
+	Timeline       UMETA(DisplayName = "Timeline (tagged points list)"),
+	SavedVideos    UMETA(DisplayName = "Saved Videos (film strip)"),
+	Settings       UMETA(DisplayName = "Settings (gear)")
+};
+
+/** The tabs in the OLD drop-down nav bar (Figma page "Default iPad Version": "Profile", "Progress", "Saved Videos",
+ *  "History & Timeline" and "Settings"). The nav bar was replaced by the side bar (EIHPCSideTab); this enum is kept
+ *  so Blueprints that call SelectTab(...) / listen to OnTabChanged keep compiling. None = no tab selected. */
 UENUM(BlueprintType)
 enum class EIHPCNavTab : uint8
 {
@@ -89,6 +109,48 @@ struct FIHPCTaggedMoment
 	}
 };
 
+/**
+ * One card in the Action panel (Figma frame 19: "Idle", "Running", "Jugging", "Jumping").
+ * Clicking the card plays ActionName on the possessed pawn's UAnimationTimelineComp (its Action Clips map, per pawn).
+ *   * bIsDefault ("Idle"): always available. Plays the pawn's "Idle" clip if it has one, otherwise goes back to the
+ *     pawn's own animation (StopAction + the walk / jog / run speed it had before a card changed it).
+ *   * LocomotionSpeed >= 0: used when the pawn has NO clip for ActionName - the card drives the pawn's built-in
+ *     walk / jog / run instead (ACPP_AbbyCharacter::Speed, 0 = walk, 0.62 = jog, 1 = run).
+ *   * Otherwise a pawn without the clip shows the card greyed out.
+ */
+USTRUCT(BlueprintType)
+struct FIHPCActionInfo
+{
+	GENERATED_BODY()
+
+	/** Text on the card, e.g. "Running". */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC")
+	FText Label;
+
+	/** Key in the pawn's AnimationTimelineComp > Action Clips, e.g. "Running", "TennisForehand". */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC")
+	FName ActionName;
+
+	/** The "Idle" card: always clickable, means "no special action". Exactly one card should have this. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC")
+	bool bIsDefault = false;
+
+	/** If >= 0 and the pawn has no clip for ActionName: set the pawn's locomotion speed to this (0 walk ... 1 run). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC", meta = (ClampMin = "-1", ClampMax = "1"))
+	float LocomotionSpeed = -1.f;
+
+	/** Optional picture for this card (empty = the panel's Default Card Picture). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IHPC")
+	TObjectPtr<UTexture2D> Picture = nullptr;
+
+	FIHPCActionInfo() = default;
+
+	FIHPCActionInfo(const FText& InLabel, FName InActionName, bool bInIsDefault = false, float InLocomotionSpeed = -1.f)
+		: Label(InLabel), ActionName(InActionName), bIsDefault(bInIsDefault), LocomotionSpeed(InLocomotionSpeed)
+	{
+	}
+};
+
 /** One coloured line in a line graph (e.g. the "Bones" line). */
 USTRUCT(BlueprintType)
 struct FIHPCGraphSeries
@@ -125,3 +187,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FIHPCSimpleEvent);
 
 /** An event that carries one tagged moment, e.g. "this video card was chosen". */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIHPCMomentEvent, const FIHPCTaggedMoment&, Moment);
+
+/** A side bar tab was clicked / the open side panel changed. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIHPCSideTabEvent, EIHPCSideTab, Tab);
+
+/** An event that carries a piece of text, e.g. "the user sent this chat message". */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIHPCTextEvent, const FText&, Text);

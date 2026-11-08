@@ -11,6 +11,8 @@
 //
 // Widget Blueprint: /Game/UserInterface/IHPC/Widgets/WBP_IHPC_VideosRow
 //   Needs a ScrollBox "CardScrollBox" (horizontal) and a Slider "ScrollSlider".
+//   The same class also drives the VERTICAL list of the Saved Videos side panel (WBP_IHPC_SavedVideosList,
+//   FINAL FESTIVAL redesign): a vertical CardScrollBox and no ScrollSlider; the gap then goes below each card.
 // -----------------------------------------------------------------------------
 
 #pragma once
@@ -40,7 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IHPC|Setup")
 	TSubclassOf<UCPP_UW_IHPCVideoCard> CardClass;
 
-	/** Gap between cards (px). Figma cards are ~263 px apart and 240 px wide. */
+	/** Gap between cards (px). Figma cards are ~263 px apart and 240 px wide. Below each card in a vertical list. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IHPC|Layout")
 	float CardSpacing = 23.f;
 
@@ -69,7 +71,8 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UPROPERTY(meta = (BindWidget)) TObjectPtr<UScrollBox> CardScrollBox;
-	UPROPERTY(meta = (BindWidget)) TObjectPtr<USlider> ScrollSlider;
+	/** Thin scroll indicator (horizontal row). Optional: the vertical Saved Videos list has none. */
+	UPROPERTY(meta = (BindWidgetOptional)) TObjectPtr<USlider> ScrollSlider;
 
 private:
 	UFUNCTION() void HandleCardClicked(UCPP_UW_IHPCVideoCard* Card);
