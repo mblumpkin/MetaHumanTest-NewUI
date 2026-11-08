@@ -1,0 +1,47 @@
+# This repository holds ONLY the IHPC UI work (Figma "FINAL FESTIVAL" side-bar redesign) of the
+# MetaHumanTest Unreal project. Everything else in the project folder is ignored on purpose:
+# the full project (MetaHumans, levels, Fab content ...) lives in Perforce. The paths below are the
+# project's own, so the files drop straight into a copy of MetaHumanTest.
+
+# Ignore everything ...
+/*
+
+# ... except these.
+!/.gitignore
+!/.gitattributes
+!/.github/
+
+!/Source/
+/Source/*
+!/Source/MetaHumanTest/
+/Source/MetaHumanTest/*
+!/Source/MetaHumanTest/Public/
+/Source/MetaHumanTest/Public/*
+!/Source/MetaHumanTest/Public/IHPC_UI/
+!/Source/MetaHumanTest/Private/
+/Source/MetaHumanTest/Private/*
+!/Source/MetaHumanTest/Private/IHPC_UI/
+!/Source/MetaHumanTest/CPP_MouseFunctionComp.h
+!/Source/MetaHumanTest/CPP_MouseFunctionComp.cpp
+
+!/Content/
+/Content/*
+!/Content/UserInterface/
+/Content/UserInterface/*
+!/Content/UserInterface/IHPC/
+!/Content/Blueprints/
+/Content/Blueprints/*
+!/Content/Blueprints/BP_PlayerController.uasset
+
+!/Icons/
+!/SourceArt/
+/SourceArt/*
+!/SourceArt/Figma/
+!/Tools/
+/Tools/*
+!/Tools/FigmaUI/
+!/README/
+
+# Python caches from the tools
+__pycache__/
+*.pyc
