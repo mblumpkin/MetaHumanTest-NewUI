@@ -1,5 +1,7 @@
 # 02 — Figma → Unreal map
 
+> **First version (drop-down nav bar).** The current UI (FINAL FESTIVAL: side bar, side panels, chat) is in [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md); where this page and 08 disagree, 08 is right.
+
 Figma file: **Avatar Injury Prevention Program**, page **Default iPad Version** (file key `IImR794aBnUhWDt891b1wQ`).
 Frames are **iPad Pro 12.9" (1366 × 1024)**. All Figma numbers below are Figma pixels.
 

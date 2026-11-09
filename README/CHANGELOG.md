@@ -67,3 +67,16 @@ Merged-project work, tracked in <https://github.com/MatinEsmaeili00/MetaHuman-An
 | 35 | 2026-11-08 | `CPP_UW_IHPCLayerSwitcher`, `AnatomyViewComp` | Buttons = skin amounts **1 / 0.5 / 0** (`BodySkinAmount`, `MusclesSkinAmount`, `SkeletonSkinAmount`); `Skin.FadeLength` 1 so 0.5 = muscles fully shown. |
 | 36 | 2026-11-08 | `CPP_UW_AnatomyViewSwitcher` | **Fix:** the slider's `SetValue` echo stopped every animated layer change after one frame (buttons stuck at depth ≈ 0.04, bones never shown). |
 | 37 | 2026-11-08 | `AnatomyPickerComp`, segmented meshes | **Fix:** muscle glow missing (both pickers shared one highlight mesh name) and glow on the wrong part (vertex-colour IDs sRGB-converted at build; rewritten in place). |
+
+## Step 6 — FINAL FESTIVAL redesign: side bar instead of nav bar (repo [MetaHumanTest-NewUI](https://github.com/mblumpkin/MetaHumanTest-NewUI))
+
+Full write-up: [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md).
+
+| # | Date | Commit | Step |
+|---|---|---|---|
+| 38 | 2026-11-08 | [`008bd39`](https://github.com/mblumpkin/MetaHumanTest-NewUI/commit/008bd39) | Baseline: the IHPC UI as it is in Perforce (steps 0–37), before the redesign. |
+| 39 | 2026-11-08 | [`56e0e21`](https://github.com/mblumpkin/MetaHumanTest-NewUI/commit/56e0e21) | Figma page FINAL FESTIVAL (node `498:2760`) assets → `SourceArt/Figma/Original/v2_FinalFestival`; `Tools/FigmaUI/make_final_festival_textures.py` → 32 PNGs (side bar icons from `Icons/`, BOT, chat send, reset view, action card, chevrons, close X, graph icons). |
+| 40 | 2026-11-08 | [`e05bbe2`](https://github.com/mblumpkin/MetaHumanTest-NewUI/commit/e05bbe2) | C++: side bar, side tab, chat panel, Action panel + card, Graphs panel + accordion header + graph card, tagged points list; HUD rewritten (sliding side panel, zoomed graph, reset view; old nav bar calls kept as wrappers); timeline compact mode; `CPP_MouseFunctionComp::ResetView`. Built: *Succeeded*, no warnings. |
+| 41 | 2026-11-08 | [`1116807`](https://github.com/mblumpkin/MetaHumanTest-NewUI/commit/1116807) | Repo front page. |
+| 42 | 2026-11-09 | [`353996a`](https://github.com/mblumpkin/MetaHumanTest-NewUI/commit/353996a) | 32 textures imported; 10 new Widget Blueprints; HUD, layer switcher, controller updated. Tested in Play-In-Editor. **Fixes:** speed slider moved off the side bar to the right edge; long panel titles shrink to fit. |
+| 43 | 2026-11-09 | (this commit) | README page 08 (Figma vs Unreal, widget trees, how-tos, test log, limitations), notes on pages 01–07, Figma frame screenshots in `SourceArt/Figma/Screens/v2_FinalFestival`. |

@@ -1,5 +1,7 @@
 # 07 — Known limitations and next steps
 
+> **First version (drop-down nav bar).** The current UI (FINAL FESTIVAL: side bar, side panels, chat) is in [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md); where this page and 08 disagree, 08 is right.
+
 ## Placeholder / sample data (works, but not real yet)
 | What | Where it comes from now | How to make it real |
 |---|---|---|

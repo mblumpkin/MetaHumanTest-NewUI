@@ -1,13 +1,29 @@
 # IHPC UI — Figma to Unreal
 
 This folder explains the user interface that was added to the **MetaHumanTest** Unreal project from the Figma file
-**"Avatar Injury Prevention Program"** (page *Default iPad Version*), what every piece does, and how to change it.
+**"Avatar Injury Prevention Program"**, what every piece does, and how to change it.
+
+## Current version: FINAL FESTIVAL (side bar) → [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md)
+
+The drop-down nav bar was replaced by **tabs in a side bar** (Figma page *FINAL FESTIVAL*): Action, Pose Estimation,
+Graphs, Timeline, Saved Videos, Settings, each opening a **side panel**, plus the **BOT** chat and a **reset-view**
+button. Start with page 08; it has the quick tour, Figma/Unreal comparisons, widget trees and how-tos.
+
+| Figma (FINAL FESTIVAL, frame 21) | Unreal (Play-In-Editor) |
+|---|---|
+| ![Figma](images/ff_figma_21_graphs_arms.png) | ![Unreal](images/ff_unreal_21_graphs_arms.png) |
+
+## First version (nav bar), pages 01–07
+
+Pages 01–07 document the first version, built from the page *Default iPad Version*. The timeline bar, layer buttons,
+line graphs, video cards and toggle switches they describe are still used. The HUD layout, nav bar and analysis
+panel they describe were replaced; for those, follow page 08.
 
 | Figma | Unreal (Play-In-Editor) |
 |---|---|
 | ![Figma panel](images/figma_03_analysis_panel.png) | ![Unreal panel](images/unreal_03_analysis_panel.png) |
 
-## See it in 30 seconds
+### See the first version in 30 seconds (as it was; the nav bar no longer exists)
 
 1. Open the project, open the level **`Main`** (it opens by default).
 2. Press **Play**.
@@ -40,6 +56,7 @@ This folder explains the user interface that was added to the **MetaHumanTest** 
 | [05_How_To_Change_Things.md](05_How_To_Change_Things.md) | Recipes: change text/colours, add real data, add a new tab screen, etc. |
 | [06_Pipeline_And_Tools.md](06_Pipeline_And_Tools.md) | How the Figma assets became Unreal textures, how to rebuild, the build steps |
 | [07_Known_Limitations_And_Next_Steps.md](07_Known_Limitations_And_Next_Steps.md) | What is placeholder data, what was interpreted, what to do next |
+| **[08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md)** | **The current UI: side bar, side panels, chat, actions, graphs, reset view (overrides 01–07 where they differ)** |
 | [CHANGELOG.md](CHANGELOG.md) | Every step in order, with its GitHub commit |
 
 ## Where everything lives
@@ -50,8 +67,10 @@ MetaHumanTest/
 │  ├─ Public/IHPC_UI/      ← C++ headers (what each widget exposes)
 │  └─ Private/IHPC_UI/     ← C++ code (what each widget does)
 ├─ Content/UserInterface/IHPC/
-│  ├─ Widgets/             ← 9 Widget Blueprints (the look/layout, editable in UMG)
-│  └─ Textures/            ← 31 UI textures (icons, toggle, card art, glow, shadow, timeline + layer buttons, close X)
+│  ├─ Widgets/             ← 19 Widget Blueprints (the look/layout, editable in UMG)
+│  └─ Textures/            ← 63 UI textures (side bar icons, BOT, chat, action card, timeline + layer buttons, …)
+├─ Content/Blueprints/     ← BP_PlayerController (creates the HUD), BP_SpeedSlider (moved to the right edge)
+├─ Icons/                  ← high-quality side bar icons supplied with the FINAL FESTIVAL design
 ├─ SourceArt/Figma/
 │  ├─ Original/            ← files downloaded from Figma
 │  ├─ Screens/             ← reference screenshots of the Figma frames
@@ -62,9 +81,10 @@ MetaHumanTest/
 
 **Who creates the HUD:** `CPP_PlayerController::BeginPlay` creates `WBP_IHPC_HUD` (set as **Main HUD Widget Class** in
 `BP_PlayerController` → Class Defaults), the same way it creates the anatomy switcher and pawn switcher, and draws it on
-top of them (Z-order 10). The Level Blueprint creates no UI. The **layer switcher** (`WBP_IHPC_LayerSwitcher`, step 3) is
-the controller's *Anatomy View Switcher Widget Class*, in place of the old placeholder `WB_AnatomyViewSwitcher`. (The older `WBP_Header` draft is still in
-`Content/UserInterface/Widgets` but no longer used.)
+top of them (Z-order 10). The Level Blueprint creates no UI. The **layer switcher** (`WBP_IHPC_LayerSwitcher`) now lives
+inside the side bar, so the controller's *Anatomy View Switcher Widget Class* is empty (in the first version it pointed
+to the layer switcher). (The older `WBP_Header` draft is still in `Content/UserInterface/Widgets` but no longer used, and
+so are `WBP_IHPC_AnalysisPanel`, `WBP_IHPC_NavTab`, `WBP_IHPC_GraphAccordion` and `WBP_IHPC_VideosRow` since FINAL FESTIVAL.)
 
 ## The one idea to understand
 

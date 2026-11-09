@@ -1,5 +1,7 @@
 # 01 — Overview: what was built
 
+> **First version (drop-down nav bar).** The current UI (FINAL FESTIVAL: side bar, side panels, chat) is in [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md); where this page and 08 disagree, 08 is right.
+
 ## Scope (what was asked)
 
 From the Figma page *Default iPad Version*, the components at the top of the layers panel:

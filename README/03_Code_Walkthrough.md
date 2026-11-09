@@ -1,5 +1,7 @@
 # 03 — Code walkthrough (every file, every function)
 
+> **First version (drop-down nav bar).** The current UI (FINAL FESTIVAL: side bar, side panels, chat) is in [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md); where this page and 08 disagree, 08 is right.
+
 All new C++ lives in `Source/MetaHumanTest/Public/IHPC_UI/` (headers) and `Source/MetaHumanTest/Private/IHPC_UI/`
 (code). Every file also has comments inside it; this page explains the same code in plain language, in the order the
 pieces depend on each other. Line links point at the version on GitHub.

@@ -1,5 +1,7 @@
 # 05 — How to change things
 
+> **First version (drop-down nav bar).** The current UI (FINAL FESTIVAL: side bar, side panels, chat) is in [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md); where this page and 08 disagree, 08 is right.
+
 ## Change a colour, font, text, size or position
 Open the Widget Blueprint in `Content/UserInterface/IHPC/Widgets`, select the widget in the **Hierarchy**, change it in
 **Details**, **Compile**, **Save**. Keep the names marked (C++) in [04](04_Widget_Blueprints.md).

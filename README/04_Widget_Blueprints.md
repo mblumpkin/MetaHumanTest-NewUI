@@ -1,5 +1,7 @@
 # 04 — Widget Blueprints
 
+> **First version (drop-down nav bar).** The current UI (FINAL FESTIVAL: side bar, side panels, chat) is in [08_Final_Festival_Redesign.md](08_Final_Festival_Redesign.md); where this page and 08 disagree, 08 is right.
+
 Folder: `Content/UserInterface/IHPC/Widgets/` (`/Game/UserInterface/IHPC/Widgets`).
 
 **Rule:** names marked **(C++)** are used by the C++ parent class (`BindWidget`). You can move, restyle, resize or wrap
