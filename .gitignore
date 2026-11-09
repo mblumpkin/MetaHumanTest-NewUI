@@ -32,6 +32,7 @@
 !/Content/Blueprints/
 /Content/Blueprints/*
 !/Content/Blueprints/BP_PlayerController.uasset
+!/Content/Blueprints/BP_SpeedSlider.uasset
 
 !/Icons/
 !/SourceArt/
